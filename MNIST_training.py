@@ -3,14 +3,12 @@ import pickle as pkl
 
 from keras import Model
 from keras.models import Sequential
-from keras.layers import Input, Conv2D, MaxPooling2D, BatchNormalization
-from keras.layers import Conv2DTranspose, UpSampling2D
-from keras.layers import Activation, concatenate, Flatten, Dense, Dropout
-
-import matplotlib.pyplot as plt
-
+from keras.layers import Input, Conv2D, MaxPooling2D
+from keras.layers import Flatten, Dense
+######################################
 from keras.datasets import mnist
 ######################################
+
 def myModel():
     model = Sequential()
     model.add( Conv2D(32, (3, 3), activation='relu', padding='same', 
@@ -35,16 +33,15 @@ def myModel():
     return model
 
 if __name__ == "__main__":
-
     (X_train, y_train), (X_test, y_test) = mnist.load_data()
     X_train = np.reshape(X_train,(-1,28,28,1))
     X_test  = np.reshape(X_test,(-1,28,28,1))
     
     model = myModel()
-    model.fit(  x=X_train, y=y_train, batch_size=32, epochs=10, 
-                validation_split=0.2, verbose=1 )
+    model.fit(x=X_train, y=y_train, batch_size=32, epochs=10, 
+              validation_split=0.2, verbose=1 )
 
-    y_preds = np.argmax( model.predict( x=X_test, verbose=1 ), axis=1 )
+    y_preds = np.argmax(model.predict( x=X_test, verbose=1 ), axis=1 )
     print('Accuracy = ' + str(np.mean(y_true==y_preds) ) )
 
     ###################################################
