@@ -76,6 +76,6 @@ if __name__ == "__main__":
     print('Accuracy = ' + str(np.mean(y_test==y_preds) ) )
 
     ######################################################
-    # Export Keras model weight
+    # Export Keras model weights
     keras_weights( model, 'MNIST_weights.pkl', verbose=1 )
     ######################################################

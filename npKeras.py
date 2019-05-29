@@ -267,10 +267,13 @@ class Sequential:
             print(' ')
 
     def _predict(self, X):
-        x = X
-        for layer in self.layers:
-            x = layer.forward(x)
-        return x
+        try:
+            x = X
+            for layer in self.layers:
+                x = layer.forward(x)
+            return x
+        except:
+            raise Exception("error in prediction")
 
     def predict(self, X, batch_size=0, n_proc=0, verbose=0):
         batches = int(np.ceil(X.shape[0]/batch_size))
@@ -283,8 +286,7 @@ class Sequential:
         if n_proc<=0:
             if verbose==1:
                 t0 = time.time()
-                print(
-  f'Predicting N={X.shape[0]} batch_size={batch_size} single thread', end=' ')                
+                print(f'Predicting N={X.shape[0]} batch_size={batch_size} single thread')                
             y =np.concatenate( [self._predict(part) for part in parts], axis=0 )
             if verbose==1:
                 print(f'==> done in {time.time() - t0:.2f}s')
@@ -292,8 +294,7 @@ class Sequential:
         from multiprocessing import Pool
         if verbose==1:
             t0 = time.time()
-            print(
-  f'Predicting N={X.shape[0]} batch_size={batch_size} n_proc={n_proc}', end=' ')
+            print(f'Predicting N={X.shape[0]} batch_size={batch_size} n_proc={n_proc}')
         y = np.concatenate( Pool(n_proc).map(self._predict, parts ), axis=0)
         if verbose==1:
             print(f'==> done in {time.time() - t0:.2f}s')
