@@ -310,9 +310,9 @@ class Sequential:
         return self.accuracy(y_true, y_preds)
 
     def summary(self):
-        print('==============================================================')
-        print('Layer (type)                     Output Shape        Param #')
-        print('==============================================================')
+        print('==================================================================')
+        print('Layer (type)                         Output Shape        Param #')
+        print('==================================================================')
         cnt = 0
         total_parms = 0
         for layer in self.layers:
@@ -327,7 +327,7 @@ class Sequential:
             else:
                 parms = 0
             total_parms += parms
-            print(f'{name:<32} {str(layer.output_shape):<12} {parms:15d}')
-            print('--------------------------------------------------------------')
+            print(f'{name:<36} {str(layer.output_shape):<12} {parms:15d}')
+            print('------------------------------------------------------------------')
         print(f'Total params: {total_parms:,d}')
-        print('==============================================================')
+        print('==================================================================')
