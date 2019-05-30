@@ -36,46 +36,45 @@ class Layer():
     def build(self, *args, **kwargs):
         pass
     def build_(self, input_shape):
-        if input_shape != None:
+        if input_shape is not None:
             if input_shape is int:
                 input_shape = (input_shape,)
-            if self.args==():
+            if self.args == ():
                 self.args = [input_shape]
             else:
                 self.args = [input_shape] + list(self.args)
-        self.build( *self.args, **self.kwargs )
+        self.build(*self.args, **self.kwargs)
 
-    def get_im2col_indices(self, x_shape, field_height=3, field_width=3, 
-                           padding=1, h_stride=1, w_stride=1 ):
+    def get_im2col_indices(self, x_shape, field_height=3, field_width=3,
+                           padding=1, h_stride=1, w_stride=1):
         _, C, H, W = x_shape
         assert (H + 2 * padding - field_height) % h_stride == 0
         assert (W + 2 * padding - field_width) % w_stride == 0
         out_height = (H + 2 * padding - field_height) / h_stride + 1
         out_width = (W + 2 * padding - field_width) / w_stride + 1
 
-        i0 = np.repeat(np.arange(field_height,dtype='int32'), field_width)
+        i0 = np.repeat(np.arange(field_height, dtype='int32'), field_width)
         i0 = np.tile(i0, C)
-        i1 = w_stride * np.repeat(np.arange(out_height, dtype='int32'), 
+        i1 = w_stride * np.repeat(np.arange(out_height, dtype='int32'),
                                   out_width)
         j0 = np.tile(np.arange(field_width), field_height * C)
-        j1 = w_stride * np.tile(np.arange(out_width, dtype='int32'), 
+        j1 = w_stride * np.tile(np.arange(out_width, dtype='int32'),
                                 int(out_height))
         i = i0.reshape(-1, 1) + i1.reshape(1, -1)
         j = j0.reshape(-1, 1) + j1.reshape(1, -1)
 
-        k = np.repeat(np.arange(C, dtype='int32'), 
+        k = np.repeat(np.arange(C, dtype='int32'),
                       field_height * field_width).reshape(-1, 1)
         return (k, i, j)
 
-    def im2col_indices(self, x, field_height=3, field_width=3, padding=1, 
-                       h_stride=1, w_stride=1 ):
+    def im2col_indices(self, x, field_height=3, field_width=3, padding=1,
+                       h_stride=1, w_stride=1):
         """ An implementation of im2col based on some fancy indexing """
         # Zero-pad the input
         p = padding
         x_padded = np.pad(x, ((0, 0), (0, 0), (p, p), (p, p)), mode='constant')
-        k, i, j = self.get_im2col_indices(x.shape, field_height, field_width, 
-                                          padding, h_stride, w_stride )
-        #print((k,i,j))   
+        k, i, j = self.get_im2col_indices(x.shape, field_height, field_width,
+                                          padding, h_stride, w_stride)
         cols = x_padded[:, k, i, j]
         C = x.shape[1]
         cols = cols.transpose(1, 2, 0).reshape(field_height * field_width * C,
@@ -83,7 +82,7 @@ class Layer():
         return cols
 
 class Conv2D(Layer):
-    def build(self, input_shape, filters, kernel_size=(3,3), strides=(1,1), 
+    def build(self, input_shape, filters, kernel_size=(3, 3), strides=(1, 1),
               activation=None, padding='same', name=None):
         self.d_X, self.h_X, self.w_X = input_shape
 
@@ -96,7 +95,7 @@ class Conv2D(Layer):
             self.h_stride, self.w_stride = strides, strides
         elif type(strides) is tuple:
             self.h_stride, self.w_stride = strides
-        if padding=='same':
+        if padding == 'same':
             self.padding = 1
         else:
             self.padding = 0
@@ -116,18 +115,20 @@ class Conv2D(Layer):
         self.output_shape = (self.filters, self.h_out, self.w_out)
         self.name = name
         self.type = 'Conv2D'
+
     def forward(self, X):
         self.n_X = X.shape[0]
-        X_col = super().im2col_indices( X, self.h_filter, self.w_filter, 
+        X_col = super().im2col_indices(X, self.h_filter, self.w_filter,
             h_stride=self.h_stride, w_stride=self.w_stride, padding=self.padding)
         W_row = self.W.reshape(self.filters, -1)
         out = W_row @ X_col + self.b
         out = out.reshape(self.filters, self.h_out, self.w_out, self.n_X)
         out = out.transpose(3, 0, 1, 2)
         return out
+
     def set_weights(self, W, b):
         self.W = W
-        self.b = np.reshape(b,(-1,1))
+        self.b = np.reshape(b, (-1, 1))
 
 class MaxPooling2D(Layer):
     def build(self, input_shape, size, strides, name=None):
@@ -146,12 +147,13 @@ class MaxPooling2D(Layer):
         self.output_shape = (self.d_X, self.h_out, self.w_out)
         self.name = name
         self.type = 'MaxPooling2D'
+
     def forward(self, X):
         self.n_X = X.shape[0]
-        X_reshaped = X.reshape( X.shape[0] * X.shape[1], 1, X.shape[2], 
+        X_reshaped = X.reshape(X.shape[0] * X.shape[1], 1, X.shape[2],
                                X.shape[3])
-        X_col = super().im2col_indices( X_reshaped, self.size, self.size, 
-                                       padding=0, h_stride=self.h_stride, 
+        X_col = super().im2col_indices(X_reshaped, self.size, self.size,
+                                       padding=0, h_stride=self.h_stride,
                                        w_stride=self.w_stride)
         self.max_indexes = np.argmax(X_col, axis=0)
         out = X_col[self.max_indexes, range(self.max_indexes.size)]
@@ -164,11 +166,11 @@ class Flatten(Layer):
         self.params = []
         self.name = name
         self.type = 'Flatten'
-        self.output_shape=(np.prod(input_shape), )
+        self.output_shape=(np.prod(input_shape),)
     def forward(self, X):
         self.X_shape = X.shape
         self.out_shape = (self.X_shape[0], -1)
-        out = X.transpose(0,2,3,1).ravel().reshape(self.out_shape)
+        out = X.transpose(0, 2, 3, 1).ravel().reshape(self.out_shape)
         self.out_shape = self.out_shape[1]
         return out
 
@@ -179,19 +181,20 @@ class Dense(Layer):
         self.b = np.zeros((1, units))
         self.params = [self.W, self.b]
         self.activation = activation
-        self.output_shape = (units, )
+        self.output_shape = (units,)
         self.name = name
         self.type = 'Dense'
     def forward(self, X):
         out = X @ self.W + self.b
         return out
     def set_weights(self, W, b):
-        self.W = W  
+        self.W = W
         self.b = np.reshape(b, (1,-1))
+
 
 class SparseCategory(Layer):
     def build(self, input_shape, name=None):
-        self.output_shape = (1, )
+        self.output_shape = (1,)
         self.name = name
         self.type = 'Dense'
     def forward(self, X):
@@ -200,7 +203,7 @@ class SparseCategory(Layer):
 class ReLU(Layer):
     def build(self, input_shape, name=None):
         self.params = []
-        self.output_shape=input_shape
+        self.output_shape = input_shape
         self.name = name
         self.type = 'ReLU'
     def forward(self, X):
@@ -210,7 +213,7 @@ class ReLU(Layer):
 class softmax(Layer):
     def build(self, input_shape, name=None):
         self.params = []
-        self.output_shape=input_shape
+        self.output_shape = input_shape
         self.name = name
         self.type = 'ReLU'
     def forward(self, X):
@@ -232,16 +235,16 @@ class Sequential:
         self.layers.append(layer)
         layer.build_(self.output_shape)
         self.output_shape = layer.output_shape
-        if layer.name == None:
+        if layer.name is None:
             layer.name = f'_{layer.type.lower()}_{str(len(self.layers))}'
         if hasattr(layer, 'activation') == True and layer.activation != None:
-            if  layer.activation == 'relu':
-                self.add( ReLU() )
+            if layer.activation == 'relu':
+                self.add(ReLU())
             elif layer.activation == 'softmax':
-                self.add( softmax() )
+                self.add(softmax())
 
     def set_weights(self, weights, verbose=1):
-        for key in  weights.keys():
+        for key in weights.keys():
             for layer in self.layers:
                 if layer.name == key:
                     W_shape_old = layer.W.shape
@@ -251,19 +254,19 @@ class Sequential:
                     b_shape_new = layer.b.shape
                     if W_shape_old != W_shape_new or b_shape_old != b_shape_new:
                         raise Exception("Weights shape mismatch")
-                    layer.set_weights( W, b )
-                    if verbose==1:
-                        print(
+                    layer.set_weights(W, b)
+                    if verbose == 1:
+                        print( \
                  f' Layer {layer.name}({layer.type}) W={W.shape} b={b.shape}')
 
     def load_weights(self, file_, verbose=1):
-        pickle_in = open( file_, 'rb')
-        weights = pkl.load( pickle_in )
+        pickle_in = open(file_, 'rb')
+        weights = pkl.load(pickle_in)
         pickle_in.close()
-        if verbose==1:
+        if verbose == 1:
             print(f'\nLoading model weights from file {file_}')
         self.set_weights(weights, verbose=verbose)
-        if verbose==1:
+        if verbose == 1:
             print(' ')
 
     def _predict(self, X):
@@ -272,36 +275,36 @@ class Sequential:
             for layer in self.layers:
                 x = layer.forward(x)
             return x
-        except:
+        except Exception:
             raise Exception("error in prediction")
 
     def predict(self, X, batch_size=0, n_proc=0, verbose=0):
         batches = int(np.ceil(X.shape[0]/batch_size))
-        parts=[]
-        if batch_size==0:
+        parts = []
+        if batch_size == 0:
             return self._predict(X)
         for i in range(batches):
-            parts.append( X[i*batch_size:min(X.shape[0],(i+1)*batch_size)] )
+            parts.append(X[i*batch_size:min(X.shape[0], (i+1)*batch_size)])
 
-        if n_proc<=0:
-            if verbose==1:
+        if n_proc <= 0:
+            if verbose == 1:
                 t0 = time.time()
-                print(f'Predicting N={X.shape[0]} batch_size={batch_size} single thread')                
-            y =np.concatenate( [self._predict(part) for part in parts], axis=0 )
-            if verbose==1:
+                print(f'Predicting N={X.shape[0]} batch_size={batch_size} single thread')
+            y = np.concatenate([self._predict(part) for part in parts], axis=0)
+            if verbose == 1:
                 print(f'==> done in {time.time() - t0:.2f}s')
             return y
         from multiprocessing import Pool
-        if verbose==1:
+        if verbose == 1:
             t0 = time.time()
             print(f'Predicting N={X.shape[0]} batch_size={batch_size} n_proc={n_proc}')
-        y = np.concatenate( Pool(n_proc).map(self._predict, parts ), axis=0)
-        if verbose==1:
+        y = np.concatenate(Pool(n_proc).map(self._predict, parts), axis=0)
+        if verbose == 1:
             print(f'==> done in {time.time() - t0:.2f}s')
         return y
 
     def accuracy(self, y_true, y_preds):
-        return np.mean( y_true == y_preds)
+        return np.mean(y_true == y_preds)
 
     def evaluate(self, X, y_true, batch_size=0, n_proc=1):
         y_preds = self.predict(X)
@@ -312,23 +315,20 @@ class Sequential:
         print('Layer (type)                     Output Shape        Param #')
         print('==============================================================')
         cnt = 0
-        total_parms=0
+        total_parms = 0
         for layer in self.layers:
-            cnt+=1
-            if layer.name != None:
+            cnt += 1
+            if layer.name is not None:
                 name = f'{layer.name} ({layer.type})'
             else:
                 name = f'_{layer.type.lower()}_{str(cnt)} ({layer.type})'
-                layer.name = name 
-            if hasattr(layer,'W'):
-                parms = int(np.prod(layer.W.shape) + np.prod(layer.b.shape) )
-                # else:
-                #     parms = layer.W[0] + layer.b[0] 
+                layer.name = name
+            if hasattr(layer, 'W'):
+                parms = int(np.prod(layer.W.shape) + np.prod(layer.b.shape))
             else:
                 parms = 0
-            total_parms += parms  
+            total_parms += parms
             print(f'{name:<32} {str(layer.output_shape):<12} {parms:15d}')
             print('--------------------------------------------------------------')
         print(f'Total params: {total_parms:,d}')
         print('==============================================================')
-

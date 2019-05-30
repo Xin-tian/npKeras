@@ -39,39 +39,40 @@ from npKeras import SparseCategory  # Extra Layer not in Keras
 
 
 #%% Model definition 
-def cnn( input_shape=(1,28,28), num_class=10):
-    model = Sequential( input_shape=input_shape ) 
-    model.add( Conv2D( filters=32, kernel_size=(3,3), strides=1, padding='same', 
-                        activation='relu', name='conv2d_1') )
-    #model.add( ReLU() ) # Activation as separate layer
-    model.add( Conv2D( filters=32, kernel_size=(3,3), strides=1, padding='same', 
-                        activation='relu', name='conv2d_2') )
-    model.add( MaxPooling2D( size=2, strides=2) )
+def cnn(input_shape=(1, 28, 28), num_class=10):
+    model = Sequential(input_shape=input_shape ) 
+    model.add(Conv2D(filters=32, kernel_size=(3, 3), strides=1, padding='same', 
+                        activation='relu', name='conv2d_1'))
+    #model.add(ReLU()) # Activation as separate layer
+    model.add(Conv2D(filters=32, kernel_size=(3, 3), strides=1, padding='same', 
+                        activation='relu', name='conv2d_2'))
+    model.add(MaxPooling2D(size=2, strides=2))
 
-    model.add( Conv2D( filters=32, kernel_size=(3,3), strides=1, padding='same', 
-                        activation='relu', name='conv2d_3') )
-    model.add( Conv2D( filters=32, kernel_size=(3,3), strides=1, padding='same', 
-                        activation='relu', name='conv2d_4') )
-    model.add( MaxPooling2D( size=2, strides=2) )
+    model.add(Conv2D(filters=32, kernel_size=(3, 3), strides=1, padding='same', 
+                        activation='relu', name='conv2d_3'))
+    model.add(Conv2D(filters=32, kernel_size=(3, 3), strides=1, padding='same', 
+                        activation='relu', name='conv2d_4'))
+    model.add(MaxPooling2D(size=2, strides=2))
 
-    model.add( Conv2D( filters=64, kernel_size=(3,3), strides=1, padding='same', 
-                        activation='relu', name='conv2d_5') )
-    model.add( Conv2D( filters=64, kernel_size=(3,3), strides=1, padding='same', 
-                        activation='relu', name='conv2d_6') )
+    model.add(Conv2D(filters=64, kernel_size=(3, 3), strides=1, padding='same', 
+                        activation='relu', name='conv2d_5'))
+    model.add(Conv2D(filters=64, kernel_size=(3, 3), strides=1, padding='same', 
+                        activation='relu', name='conv2d_6'))
     
-    model.add( Flatten() )
-    model.add( Dense( 128, activation='relu', name='dense_1') )
-    model.add( Dense( num_class, activation='softmax', name='dense_2') )
-    model.add( SparseCategory() )
+    model.add(Flatten())
+    model.add(Dense(128, activation='relu', name='dense_1'))
+    model.add(Dense(num_class, activation='softmax', name='dense_2'))
+    model.add(SparseCategory())
     return model
+
 
 def main():
     # Load MNIST dataset
     (X_train, y_train), (X_test, y_test) = mnist.load_data()
 
     # 注意 Format (NCHW) N x Color x Height x Width
-    X_train = np.reshape(X_train,(-1,1,28,28))  
-    X_test  = np.reshape(X_test, (-1,1,28,28))  
+    X_train = np.reshape(X_train, (-1, 1, 28, 28))  
+    X_test  = np.reshape(X_test, (-1, 1, 28, 28))  
 
     # Model preparation
     model = cnn()
@@ -83,20 +84,20 @@ def main():
     y_preds = model.predict(X_test, batch_size=250, n_proc=0,  verbose=1)
     ####################################################################
     
-    acc = np.mean(y_test==y_preds)
+    acc = np.mean(y_test == y_preds)
     print('.')
-    print( '*********************')
+    print('*********************')
     print(f'accuracy = {acc:>10.5f}')
-    print( '*********************')
+    print('*********************')
     print('.')
 
     #%% Demo
     import matplotlib.pyplot as plt
 
-    plt.figure(figsize=(10,10))
+    plt.figure(figsize=(10, 10))
     for i in range(25):
         plt.subplot(5, 5, i+1)
-        plt.title(f'{y_preds[i]}/{y_test[i]}' )
+        plt.title(f'{y_preds[i]}/{y_test[i]}')
         fig = plt.imshow(np.reshape(X_test[i],(28,28)),cmap = 'Greys')
         fig.axes.get_xaxis().set_visible(False)
         fig.axes.get_yaxis().set_visible(False)
@@ -112,9 +113,9 @@ def main():
         
         acc = np.mean(y_test==y_preds)
         print('.')
-        print( '*********************')
+        print('*********************')
         print(f'accuracy = {acc:>10.5f}')
-        print( '*********************')
+        print('*********************')
         print('.')
     except Exception:
         print('Sorry: Multiprocessig not work in your Python environment\n')

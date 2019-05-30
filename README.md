@@ -1,7 +1,7 @@
 # npKeras
 Keras model inference in pure numpy
 
-# Train Keras CNN, export the trained model weights and run inference in pure Numpy.
+# Train Keras CNN, export the trained model weights and run inference in pure Numpy
 
 npKeras uses standard Sequential model syntax definition and provides set of layer types.
 
