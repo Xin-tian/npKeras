@@ -32,4 +32,4 @@ Verbose modes of prediction shows execution times.
 To optimize execution npKeras use NCHW data format which may differ from Keras NHWC. 
 Input data could be easily converted if necessary:  np.reshape(X, (-1,1,28,28))
 
-Dedicated function for exporting trained Keras model weights is provided for transport into npKeras in picle format. During import the layers are identified by names between Keras and npKeras, and should have identical input, output shape (also weights and biases).
+Dedicated function for exporting trained Keras model weights is provided for transport into npKeras in pickle format. During import the layers are identified by names between Keras and npKeras, and should have identical input, output shape (also weights and biases).
