@@ -61,7 +61,13 @@ def myModel():
 
 
 if __name__ == "__main__":
-    (X_train, y_train), (X_test, y_test) = mnist.load_data()
+
+    MNIST_data = mnist.load_data()
+    (X_train, y_train), (X_test, y_test) = MNIST_data
+
+    # Save data for inference
+    pkl.dump( MNIST_data, open('MNIST_data.pkl', 'wb'))
+
     X_train = np.reshape(X_train,(-1, 28, 28, 1))
     X_test  = np.reshape(X_test,(-1, 28, 28, 1))
 

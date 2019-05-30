@@ -27,15 +27,14 @@
 
 import numpy as np
 import pickle as pkl
-import time     # for time stats
-####################################################
-from keras.datasets import mnist
-####################################################
+import time             # for time stats
 
+####################################################
 from npKeras import Sequential
 from npKeras import Conv2D, MaxPooling2D, Flatten, Dense
 from npKeras import ReLU, softmax
 from npKeras import SparseCategory  # Extra Layer not in Keras
+####################################################
 
 
 #%% Model definition 
@@ -67,8 +66,10 @@ def cnn(input_shape=(1, 28, 28), num_class=10):
 
 
 def main():
+
     # Load MNIST dataset
-    (X_train, y_train), (X_test, y_test) = mnist.load_data()
+    # (X_train, y_train), (X_test, y_test) = mnist.load_data()
+    (X_train, y_train), (X_test, y_test) = pkl.load(open('MNIST_data.pkl', 'rb'))
 
     # 注意 Format (NCHW) N x Color x Height x Width
     X_train = np.reshape(X_train, (-1, 1, 28, 28))  
@@ -76,13 +77,14 @@ def main():
 
     # Model preparation
     model = cnn()
+    print('CNN model')
     model.summary()
     model.load_weights('MNIST_weights.pkl', verbose=1)
 
     # Prediction
-    ####################################################################
+    #####################################################################
     y_preds = model.predict(X_test, batch_size=250, n_proc=0,  verbose=1)
-    ####################################################################
+    #####################################################################
     
     acc = np.mean(y_test == y_preds)
     print('.')
@@ -103,7 +105,7 @@ def main():
         fig.axes.get_yaxis().set_visible(False)
     plt.show()
 
-    print('Try execute with multiprocessing')
+    print('Trying execute with multiprocessing ...')
     try:
         import sys
         sys.tracebacklimit = 0        
@@ -112,11 +114,9 @@ def main():
         ####################################################################
         
         acc = np.mean(y_test==y_preds)
-        print('.')
         print('*********************')
         print(f'accuracy = {acc:>10.5f}')
         print('*********************')
-        print('.')
     except Exception:
         print('Sorry: Multiprocessig not work in your Python environment\n')
 
