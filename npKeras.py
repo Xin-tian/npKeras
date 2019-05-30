@@ -196,7 +196,7 @@ class SparseCategory(Layer):
     def build(self, input_shape, name=None):
         self.output_shape = (1,)
         self.name = name
-        self.type = 'Dense'
+        self.type = 'SparseCategory'
     def forward(self, X):
         return np.argmax(X, axis=1)
 
@@ -215,9 +215,8 @@ class softmax(Layer):
         self.params = []
         self.output_shape = input_shape
         self.name = name
-        self.type = 'ReLU'
+        self.type = 'softmax'
     def forward(self, X):
-        # self.X = X
         def softmax_(x):
             exp_x = np.exp(x - np.max(x, axis=1, keepdims=True))
             return exp_x / np.sum(exp_x, axis=1, keepdims=True)
@@ -311,7 +310,7 @@ class Sequential:
         return self.accuracy(y_true, y_preds)
 
     def summary(self):
-        print('--------------------------------------------------------------')
+        print('==============================================================')
         print('Layer (type)                     Output Shape        Param #')
         print('==============================================================')
         cnt = 0
