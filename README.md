@@ -8,7 +8,7 @@ npKeras uses standard Sequential model syntax definition and provides set of lay
 Layers:
 * Conv2D
 * Dense
-* MaxPoolind2D
+* MaxPooling2D
 * Flatten
 * ReLU
 * softmax
