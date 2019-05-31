@@ -13,7 +13,7 @@ Layers:
 * ReLU
 * softmax
 * and special SparseCategory layer (onehot to category label)
-* ... [easy expandable] 
+* ... [easily expandable] 
 
 Model supports standard function:
 * add 
