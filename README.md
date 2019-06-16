@@ -30,4 +30,4 @@ The inference can be split into batches for manageable memory consumption, and a
 To optimize execution npKeras use NCHW data format which may differ from Keras NHWC. 
 Input data could be easily converted if necessary:  np.reshape(X, (-1, 1, 28, 28))
 
-A dedicated function for exporting trained Keras model weights is provided for transport into npKeras in pickle format. During import, the layers are identified by names between Keras and npKeras, and should have identical input shape and output shape.
+A dedicated function for exporting trained Keras model weights is provided for transport into npKeras in pickle format. During import, the layers are identified by names between Keras and npKeras and should have identical input shape and output shape.
